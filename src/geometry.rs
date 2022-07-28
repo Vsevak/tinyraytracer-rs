@@ -8,13 +8,6 @@ use num_traits::{Float, Num};
 #[derive(Debug,Copy,Clone)]
 pub struct GVec<T, const D: usize> ([T; D]);
 
-#[derive(Debug)]
-pub struct GVec3<T> {
-    x: T,
-    y: T,
-    z: T
-}
-
 impl<T, const D: usize> From<[T; D]> for GVec<T, D>{
     fn from(v: [T; D]) -> Self {
         GVec(v)
@@ -103,39 +96,6 @@ impl<T: Num+Copy+Neg<Output = T>, const D: usize> Neg for GVec<T,D> {
         self*(-T::one())
     }
 }
-
-impl<T> Index<usize> for GVec3<T> {
-    type Output = T;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        assert!(index < 3);
-        match index {
-            0 => &self.x,
-            1 => &self.y,
-            2 => &self.z,
-            _ => unreachable!()
-        }
-    }
-}
-
-impl<T> IndexMut<usize> for GVec3<T> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        assert!(index < 3);
-        match index {
-            0 => &mut self.x,
-            1 => &mut self.y,
-            2 => &mut self.z,
-            _ => unreachable!()
-        }
-    }
-}
-
-impl<T: Float> GVec3<T> {
-    pub fn norm(&self) -> T {
-        (self.x*self.x + self.y*self.y + self.z*self.z).sqrt()
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
