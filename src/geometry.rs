@@ -1,7 +1,7 @@
 
 use std::ops::{Index, IndexMut};
 use std::convert::From;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Mul, Neg, Sub};
 
 use num_traits::{Float, Num};
 
@@ -33,7 +33,7 @@ impl<T, const D: usize> IndexMut<usize> for GVec<T, D> {
 impl<T: Float, const D: usize> GVec<T, D> {
     pub fn norm(self) -> T {
         match D {
-            1.. => (self.0.into_iter().reduce(|acc, i| acc + i*i)).unwrap().sqrt(),
+            1.. => (self.0.into_iter().fold(T::zero(), |acc, i| acc + i*i)).sqrt(),
             _ => T::zero()
         } 
     }
@@ -129,14 +129,14 @@ mod tests {
 
     #[test]
     fn norm3() {
-        let v = GVec::from([0.0, 1.0, -1.0]);
+        let v = GVec::from([0.0, 5.0, -5.0]);
         println!("{}", v.norm());
-        assert_eq!((v.norm() - 2.0.sqrt()).abs() < 1e-5, true)
+        assert_eq!((v.norm() - 50.0.sqrt()).abs() < 1e-5, true)
     }
 
     #[test]
     fn normalize3() {
-        let v = GVec::from([0.0, 1.0, -1.0]);
+        let v = GVec::from([0.0, 25.0, -50.0]);
         let n = v.normalize();
         println!("v {:?} {}\nn {:?} {}", v, v.norm(), n, n.norm());
         assert!((n.norm()) - 1.0 < 1e-5)
@@ -196,5 +196,12 @@ mod tests {
         for i in 0..v.0.len() {
             assert!(vn[i] + v[i] < 1e-5);
         }
+    }
+
+    #[test]
+    fn vec_sq() {
+        let v = GVec::from([2.0, 1.0, -1.0]);
+        println!("{:?}", v*v);
+        assert!(v*v - 6.0 < 1e-5);
     }
 }
