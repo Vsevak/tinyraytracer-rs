@@ -4,13 +4,13 @@ use std::io::{prelude::*, Error, BufWriter};
 use std::path::Path;
 
 use crate::GVec;
-use crate::sphere::Sphere;
+use crate::sphere::{Sphere, Material};
 
 pub type Vec3f = GVec<f32,3>;
 
 pub struct Frame(Vec<Vec3f>, usize, usize);
 
-pub fn render(sphere: Sphere) -> Frame {
+pub fn render(spheres: Vec<Sphere>) -> Frame {
     let width = 1024;
     let height = 768;
     let fov = PI / 3.0;
@@ -25,10 +25,8 @@ pub fn render(sphere: Sphere) -> Frame {
             let x =  (fi + 0.5) - fwidth / 2.0;
             let y = -(fj + 0.5) + fheight / 2.0;
             let z = -fheight/(2.0*f32::tan(fov/2.0));
-            let dir = Vec3f::from([x, y, z]);
-            let norm = dir.norm();
-            let dir = dir*(1.0/norm);
-            framebuffer[i+j*width] = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &sphere);
+            let dir = Vec3f::from([x, y, z]).normalize();
+            framebuffer[i+j*width] = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &spheres);
         }
     }
     Frame(framebuffer, width, height)
@@ -51,9 +49,32 @@ pub fn draw(frame: &Frame) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn cast_ray (orig: Vec3f, dir: Vec3f, sphere: &Sphere) -> Vec3f {
-    match sphere.ray_intersect(orig, dir) {
-        Some(_) => Vec3f::from([0.4, 0.4, 0.3]),
-        None => Vec3f::from([0.2, 0.7, 0.8])
+fn scene_intersect (orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Option<(Vec3f, Vec3f, Material)> {
+    let mut dist = f32::MAX;
+    let mut hit = Vec3f::from([0.0, 0.0, 0.0]);
+    let mut n = Vec3f::from([0.0, 0.0, 0.0]);
+    let mut material = Material{ diffuse_color: Vec3f::from([0.0,0.0,0.0])};
+    for i in spheres {
+        if let Some(dist_i) = i.ray_intersect(orig, dir) {
+            if dist_i < dist {
+                dist = dist_i;
+                hit = orig + dir*dist_i;
+                n = (hit - i.center).normalize();
+                material = i.material;
+            }
+        }
+    }
+    if dist < 10000.0 {
+        Some((hit,n,material))
+    } else {
+        None
+    }
+}
+
+pub fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Vec3f {
+    if let Some((hit,n,material)) = scene_intersect(orig, dir, spheres) {
+        material.diffuse_color
+    } else {
+        Vec3f::from([0.2, 0.7, 0.8])
     }
 }

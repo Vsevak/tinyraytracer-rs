@@ -2,10 +2,18 @@ use crate::render::Vec3f;
 
 pub struct Sphere {
     pub center: Vec3f,
-    pub radius: f32
+    pub radius: f32,
+    pub material: Material
 }
 
 impl Sphere {
+    pub fn new(center: Vec3f, radius: f32, material: Material) -> Self {
+        Self{
+            center,
+            radius,
+            material
+        }
+    }
     pub fn ray_intersect(&self, orig: Vec3f , dir: Vec3f) -> Option<f32> {
         let l = self.center - orig;
         let tca = l*dir;
@@ -25,4 +33,9 @@ impl Sphere {
             Some(t0)
         }
     }
+}
+
+#[derive(Clone,Copy)]
+pub struct Material {
+    pub diffuse_color: Vec3f
 }
