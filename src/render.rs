@@ -40,7 +40,8 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
             if let Some(p) = sphere_trace(Vec3f::new(0.0,0.0,3.0), dir) {
                 let light_dir = (Vec3f::new(10.0,10.0,10.0) - p).normalize();
                 let light_intensity = f32::max(0.4, light_dir*distance_field_normal(p));
-                framebuffer[i+j*width] = Vec3f::one()*light_intensity;
+                let displacement = (f32::sin(16.0*p[0])*f32::sin(16.0*p[1])*f32::sin(16.0*p[2]) + 1.)/2.;
+                framebuffer[i+j*width] = Vec3f::one()*light_intensity*displacement;
             }
         }
     }
