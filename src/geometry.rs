@@ -106,6 +106,20 @@ impl Vec3f {
     pub fn zero() -> Self {
         Vec3f::from([0.0, 0.0, 0.0])
     }
+    pub fn one() -> Self {
+        Vec3f::from([1.0, 1.0, 1.0])
+    }
+}
+
+pub type Vec2f = GVec<f32,2>;
+
+impl Vec2f {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self::from([x, y])
+    }
+    pub fn zero() -> Self {
+        Self::from([0.0, 0.0])
+    }
 }
 
 #[cfg(test)]

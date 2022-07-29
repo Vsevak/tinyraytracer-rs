@@ -3,7 +3,6 @@ use std::fs::{File};
 use std::io::{prelude::*, Error, BufWriter};
 use std::path::Path;
 
-use crate::GVec;
 use crate::geometry::Vec3f;
 use crate::sphere::{Sphere, Material};
 
@@ -25,7 +24,13 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
             let y = -(fj + 0.5) + fheight / 2.0;
             let z = -fheight/(2.0*f32::tan(fov/2.0));
             let dir = Vec3f::from([x, y, z]).normalize();
-            framebuffer[i+j*width] = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &spheres, &lights);
+            let pixel = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &spheres, &lights);
+            let max = pixel[0].max(pixel[1].max(pixel[2]));
+            framebuffer[i+j*width] =  if max > 1.0 {
+                pixel * (1.0/max)
+            } else {
+                pixel
+            };
         }
     }
     Frame(framebuffer, width, height)
@@ -50,9 +55,9 @@ pub fn draw(frame: &Frame) -> Result<(), Error> {
 
 fn scene_intersect (orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Option<(Vec3f, Vec3f, Material)> {
     let mut dist = f32::MAX;
-    let mut hit = Vec3f::from([0.0, 0.0, 0.0]);
-    let mut n = Vec3f::from([0.0, 0.0, 0.0]);
-    let mut material = Material{ diffuse_color: Vec3f::from([0.0,0.0,0.0])};
+    let mut hit = Vec3f::zero();
+    let mut n = Vec3f::zero();
+    let mut material = Material::zero();
     for i in spheres {
         if let Some(dist_i) = i.ray_intersect(orig, dir) {
             if dist_i < dist {
@@ -70,14 +75,22 @@ fn scene_intersect (orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Option<(V
     }
 }
 
+fn reflect(i: Vec3f, n: Vec3f) -> Vec3f {
+    i - n*2.0f32*(i*n)
+}
+
 pub fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>) -> Vec3f {
-    if let Some((hit,n,material)) = scene_intersect(orig, dir, spheres) {
+    if let Some((hit, n, material)) = scene_intersect(orig, dir, spheres) {
         let mut diffuse_light_intencity = 0.0;
+        let mut specular_light_intensity = 0.0;
         for light in lights {
             let light_dir = (light.pos - hit).normalize();
-            diffuse_light_intencity += light.intencity * f32::max(0.0, light_dir*n);
+            diffuse_light_intencity += light.intensity * f32::max(0.0, light_dir*n);
+            let rf = -reflect(-light_dir, n)*dir;
+            specular_light_intensity += rf.max(0.0).powf(material.specular_exp)*light.intensity;
         }
-        material.diffuse_color * diffuse_light_intencity
+        material.diffuse_color * diffuse_light_intencity *
+        material.albedo[0] + Vec3f::one()*specular_light_intensity * material.albedo[1]
     } else {
         Vec3f::from([0.2, 0.7, 0.8])
     }
@@ -85,11 +98,11 @@ pub fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Lig
 
 pub struct Light{
     pos: Vec3f,
-    intencity: f32
+    intensity: f32
 }
 
 impl Light {
-    pub fn new(pos: Vec3f, intencity: f32) -> Self {
-        Self {pos, intencity}
+    pub fn new(pos: Vec3f, intensity: f32) -> Self {
+        Self {pos, intensity}
     }
 }
