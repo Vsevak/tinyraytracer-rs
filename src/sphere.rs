@@ -1,4 +1,4 @@
-use crate::geometry::{Vec3f, Vec2f};
+use crate::geometry::{Vec3f};
 
 pub struct Sphere {
     pub center: Vec3f,
@@ -38,7 +38,7 @@ impl Sphere {
 #[derive(Clone,Copy)]
 pub struct Material {
     pub diffuse_color: Vec3f,
-    pub albedo: Vec2f,
+    pub albedo: Vec3f,
     pub specular_exp: f32
 }
 
@@ -46,7 +46,7 @@ impl Material {
     pub fn zero() -> Self {
         Self { 
             diffuse_color: Vec3f::zero(),
-            albedo: Vec2f::zero(),
+            albedo: Vec3f::zero(),
             specular_exp: 0.0
         }
     }

@@ -24,7 +24,7 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
             let y = -(fj + 0.5) + fheight / 2.0;
             let z = -fheight/(2.0*f32::tan(fov/2.0));
             let dir = Vec3f::from([x, y, z]).normalize();
-            let pixel = cast_ray(Vec3f::zero(), dir, &spheres, &lights);
+            let pixel = cast_ray(Vec3f::zero(), dir, &spheres, &lights, 0);
             let max = pixel[0].max(pixel[1].max(pixel[2]));
             framebuffer[i+j*width] =  if max > 1.0 {
                 pixel * (1.0/max)
@@ -78,31 +78,44 @@ fn reflect(i: Vec3f, n: Vec3f) -> Vec3f {
     i - n*2.0f32*(i*n)
 }
 
-fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>) -> Vec3f {
-    if let Some((hit, n, material)) = scene_intersect(orig, dir, spheres) {
-        let mut diffuse_light_intencity = 0.0;
-        let mut specular_light_intensity = 0.0;
-        for light in lights {
-            let light_dir = (light.pos - hit).normalize();
-            let light_dist = (light.pos - hit).norm();
-            let shadow_orig = hit + n*1e-3*(light_dir*n).signum();
-
-            if let Some((shadow_pt,_,_)) = scene_intersect(shadow_orig, light_dir, spheres) {
-                if (shadow_pt-shadow_orig).norm() < light_dist {
-                    continue;
-                }
-            }
-
-            diffuse_light_intencity += light.intensity * f32::max(0.0, light_dir*n);
-            let rf = -reflect(-light_dir, n)*dir;
-            specular_light_intensity += rf.max(0.0).powf(material.specular_exp)*light.intensity;
-        }
-        material.diffuse_color * diffuse_light_intencity *
-        material.albedo[0] + Vec3f::one()*specular_light_intensity * material.albedo[1]
-    } else {
-        Vec3f::from([0.2, 0.7, 0.8])
+fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>, depth: usize) -> Vec3f {
+    if depth > 4 {
+        return Vec3f::new(0.2, 0.7, 0.8)
     }
+    let (hit, n, material) = match scene_intersect(orig, dir, spheres) {
+        Some((x,y,z)) => (x,y,z),
+        None => return Vec3f::new(0.2, 0.7, 0.8)
+    };
+
+    let reflect_dir = reflect(dir, n).normalize();
+    let reflect_orig = normal_offset(hit, n, reflect_dir);
+    let reflect_color = cast_ray(reflect_orig, reflect_dir, spheres, lights, depth+1);
+
+    let mut diffuse_light_intencity = 0.0;
+    let mut specular_light_intensity = 0.0;
+    for light in lights {
+        let light_dir = (light.pos - hit).normalize();
+        let light_dist = (light.pos - hit).norm();
+        let shadow_orig = normal_offset(hit, n, light_dir); 
+        if let Some((shadow_pt,_,_)) = scene_intersect(shadow_orig, light_dir, spheres) {
+            if (shadow_pt-shadow_orig).norm() < light_dist {
+                continue;
+            }
+        }
+        diffuse_light_intencity += light.intensity * f32::max(0.0, light_dir*n);
+        let rf = reflect(light_dir, n)*dir;
+        specular_light_intensity += rf.max(0.0).powf(material.specular_exp)*light.intensity;
+    }
+    material.diffuse_color * diffuse_light_intencity
+    * material.albedo[0] + Vec3f::one()*specular_light_intensity * material.albedo[1]
+    + reflect_color*material.albedo[2]
 }
+
+// Сдвиг точки в направлении нормали
+fn normal_offset(v: Vec3f, n: Vec3f, dir: Vec3f) -> Vec3f {
+    v + n*1e-3*(dir*n).signum()
+}
+
 
 pub struct Light{
     pos: Vec3f,
