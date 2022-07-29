@@ -1,10 +1,13 @@
 use crate::geometry::Vec3f;
 
 const SPHERE_RADIUS: f32 = 1.5;
+const NOISE_AMP: f32 = 0.2;
 const STEPS: usize = 128;
 
 fn signed_dist(p: Vec3f) -> f32 {
-    p.norm() - SPHERE_RADIUS
+    let s = p.normalize()*SPHERE_RADIUS;
+    let displacement = (f32::sin(16.0*s[0])*f32::sin(16.0*s[1])*f32::sin(16.0*s[2]))* NOISE_AMP;
+    p.norm() - (SPHERE_RADIUS + displacement)
 }
 
 pub fn sphere_trace(orig: Vec3f, dir: Vec3f) -> Option<Vec3f> {
