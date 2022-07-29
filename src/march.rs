@@ -1,6 +1,6 @@
 use crate::{geometry::Vec3f, noise::{fractal_brownian_motion, lerp}};
 
-const SPHERE_RADIUS: f32 = 1.5;
+const SPHERE_RADIUS: f32 = 1.0;
 const NOISE_AMP: f32 = 1.0;
 const STEPS: usize = 128;
 
