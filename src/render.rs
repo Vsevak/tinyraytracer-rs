@@ -13,7 +13,7 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
     let height = 768;
     let fov = PI / 3.0;
     let mut framebuffer: Vec<Vec3f> = Vec::new();
-    framebuffer.resize(width*height, Vec3f::from([0.0, 0.0, 0.0]));
+    framebuffer.resize(width*height, Vec3f::zero());
     for j in 0..height {
         for i in 0..width {
             let fheight = height as f32;
@@ -24,7 +24,7 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
             let y = -(fj + 0.5) + fheight / 2.0;
             let z = -fheight/(2.0*f32::tan(fov/2.0));
             let dir = Vec3f::from([x, y, z]).normalize();
-            let pixel = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &spheres, &lights);
+            let pixel = cast_ray(Vec3f::zero(), dir, &spheres, &lights);
             let max = pixel[0].max(pixel[1].max(pixel[2]));
             framebuffer[i+j*width] =  if max > 1.0 {
                 pixel * (1.0/max)
@@ -46,8 +46,7 @@ pub fn draw(frame: &Frame) -> Result<(), Error> {
         for i in 0..3 {
             file_buff.write(
                 &[(255.0f32 * 
-                    f32::max(0.0, 
-                        f32::min(1.0, point[i]))) as u8])?;
+                    f32::max(0.0, f32::min(1.0, point[i]))) as u8])?;
         }
     }
     Ok(())
@@ -79,12 +78,21 @@ fn reflect(i: Vec3f, n: Vec3f) -> Vec3f {
     i - n*2.0f32*(i*n)
 }
 
-pub fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>) -> Vec3f {
+fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>) -> Vec3f {
     if let Some((hit, n, material)) = scene_intersect(orig, dir, spheres) {
         let mut diffuse_light_intencity = 0.0;
         let mut specular_light_intensity = 0.0;
         for light in lights {
             let light_dir = (light.pos - hit).normalize();
+            let light_dist = (light.pos - hit).norm();
+            let shadow_orig = hit + n*1e-3*(light_dir*n).signum();
+
+            if let Some((shadow_pt,_,_)) = scene_intersect(shadow_orig, light_dir, spheres) {
+                if (shadow_pt-shadow_orig).norm() < light_dist {
+                    continue;
+                }
+            }
+
             diffuse_light_intencity += light.intensity * f32::max(0.0, light_dir*n);
             let rf = -reflect(-light_dir, n)*dir;
             specular_light_intensity += rf.max(0.0).powf(material.specular_exp)*light.intensity;
