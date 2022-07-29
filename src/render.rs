@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 use std::fs::{File};
 use std::io::{prelude::*, Error, BufWriter};
+use std::mem::swap;
 use std::path::Path;
 
 use crate::geometry::Vec3f;
@@ -78,6 +79,26 @@ fn reflect(i: Vec3f, n: Vec3f) -> Vec3f {
     i - n*2.0f32*(i*n)
 }
 
+fn refract(i: Vec3f, n: Vec3f, rf_index: f32) -> Vec3f {
+    let mut cosi = -f32::max(-1.0, f32::min(1.0, i*n));
+    let mut etai = 1.0;
+    let mut etat = rf_index;
+    let n_i = if cosi < 0.0 {
+        cosi = cosi;
+        swap(&mut etai, &mut etat);
+        -n
+    } else {
+        n
+    };
+    let eta  = etai / etat;
+    let k = 1.0 - eta*eta*(1.0 - cosi*cosi);
+    if k<0.0 {
+        Vec3f::zero()
+    } else {
+        i*eta + n_i*(eta * cosi - k.sqrt())
+    }
+}
+
 fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>, depth: usize) -> Vec3f {
     if depth > 4 {
         return Vec3f::new(0.2, 0.7, 0.8)
@@ -90,6 +111,10 @@ fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>,
     let reflect_dir = reflect(dir, n).normalize();
     let reflect_orig = normal_offset(hit, n, reflect_dir);
     let reflect_color = cast_ray(reflect_orig, reflect_dir, spheres, lights, depth+1);
+
+    let refract_dir = refract(dir, n, material.refractive_index).normalize();
+    let refract_orig = normal_offset(hit, n, refract_dir);
+    let refract_color = cast_ray(refract_orig, refract_dir, spheres, lights, depth+1);
 
     let mut diffuse_light_intencity = 0.0;
     let mut specular_light_intensity = 0.0;
@@ -109,6 +134,7 @@ fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>,
     material.diffuse_color * diffuse_light_intencity
     * material.albedo[0] + Vec3f::one()*specular_light_intensity * material.albedo[1]
     + reflect_color*material.albedo[2]
+    + refract_color*material.albedo[3]
 }
 
 // Сдвиг точки в направлении нормали

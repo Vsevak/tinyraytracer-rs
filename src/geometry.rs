@@ -101,13 +101,13 @@ pub type Vec3f = GVec<f32,3>;
 
 impl Vec3f {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Vec3f::from([x, y, z])
+        Self::from([x, y, z])
     }
     pub fn zero() -> Self {
-        Vec3f::from([0.0, 0.0, 0.0])
+        Self::from([0.0, 0.0, 0.0])
     }
     pub fn one() -> Self {
-        Vec3f::from([1.0, 1.0, 1.0])
+        Self::from([1.0, 1.0, 1.0])
     }
 }
 
@@ -119,6 +119,20 @@ impl Vec2f {
     }
     pub fn zero() -> Self {
         Self::from([0.0, 0.0])
+    }
+}
+
+pub type Vec4f = GVec<f32,4>;
+
+impl Vec4f {
+    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
+        Self::from([x, y, z, w])
+    }
+    pub fn zero() -> Self {
+        Self::from([0.0, 0.0, 0.0, 0.0])
+    }
+    pub fn one() -> Self {
+        Self::from([1.0, 1.0, 1.0, 1.0])
     }
 }
 
