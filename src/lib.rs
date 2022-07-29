@@ -8,6 +8,7 @@ pub mod geometry;
 pub mod render;
 pub mod sphere;
 pub mod march;
+pub mod noise;
 
 pub fn run() -> Result<(), Error> {
     let ivory = Material {

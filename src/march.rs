@@ -1,16 +1,19 @@
-use crate::geometry::Vec3f;
+use crate::{geometry::Vec3f, noise::fractal_brownian_motion};
 
 const SPHERE_RADIUS: f32 = 1.5;
-const NOISE_AMP: f32 = 0.2;
+const NOISE_AMP: f32 = 1.0;
 const STEPS: usize = 128;
 
 fn signed_dist(p: Vec3f) -> f32 {
-    let s = p.normalize()*SPHERE_RADIUS;
-    let displacement = (f32::sin(16.0*s[0])*f32::sin(16.0*s[1])*f32::sin(16.0*s[2]))* NOISE_AMP;
+    let displacement = -fractal_brownian_motion(p*3.4) * NOISE_AMP;
     p.norm() - (SPHERE_RADIUS + displacement)
 }
 
 pub fn sphere_trace(orig: Vec3f, dir: Vec3f) -> Option<Vec3f> {
+    if orig*orig - f32::powi(orig*dir, 2) > f32::powi(SPHERE_RADIUS, 2) {
+        return None;
+    }
+
     let mut pos = orig;
     for _ in 0..STEPS {
         let d = signed_dist(pos);
