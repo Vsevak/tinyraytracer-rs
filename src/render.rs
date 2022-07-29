@@ -5,9 +5,12 @@ use std::mem::swap;
 use std::path::Path;
 
 use crate::geometry::Vec3f;
+use crate::march::sphere_trace;
 use crate::sphere::{Sphere, Material};
 
 pub struct Frame(Vec<Vec3f>, usize, usize);
+
+const RECURSION_DEPTH: usize = 4;
 
 pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
     let width = 1024;
@@ -15,6 +18,7 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
     let fov = PI / 3.0;
     let mut framebuffer: Vec<Vec3f> = Vec::new();
     framebuffer.resize(width*height, Vec3f::zero());
+
     for j in 0..height {
         for i in 0..width {
             let fheight = height as f32;
@@ -32,6 +36,10 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
             } else {
                 pixel
             };
+
+            if let Some(p) = sphere_trace(Vec3f::new(0.0,0.0,3.0), dir) {
+                framebuffer[i+j*width] = Vec3f::one();
+            }
         }
     }
     Frame(framebuffer, width, height)
@@ -118,7 +126,7 @@ fn refract(i: Vec3f, n: Vec3f, rf_index: f32) -> Vec3f {
 }
 
 fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>, depth: usize) -> Vec3f {
-    if depth > 4 {
+    if depth > RECURSION_DEPTH {
         return Vec3f::new(0.2, 0.7, 0.8)
     }
     let (hit, n, material) = match scene_intersect(orig, dir, spheres) {
