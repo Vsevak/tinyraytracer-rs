@@ -4,13 +4,12 @@ use std::io::{prelude::*, Error, BufWriter};
 use std::path::Path;
 
 use crate::GVec;
+use crate::geometry::Vec3f;
 use crate::sphere::{Sphere, Material};
-
-pub type Vec3f = GVec<f32,3>;
 
 pub struct Frame(Vec<Vec3f>, usize, usize);
 
-pub fn render(spheres: Vec<Sphere>) -> Frame {
+pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
     let width = 1024;
     let height = 768;
     let fov = PI / 3.0;
@@ -26,7 +25,7 @@ pub fn render(spheres: Vec<Sphere>) -> Frame {
             let y = -(fj + 0.5) + fheight / 2.0;
             let z = -fheight/(2.0*f32::tan(fov/2.0));
             let dir = Vec3f::from([x, y, z]).normalize();
-            framebuffer[i+j*width] = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &spheres);
+            framebuffer[i+j*width] = cast_ray(Vec3f::from([0.0, 0.0, 0.0]), dir, &spheres, &lights);
         }
     }
     Frame(framebuffer, width, height)
@@ -71,10 +70,26 @@ fn scene_intersect (orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Option<(V
     }
 }
 
-pub fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Vec3f {
+pub fn cast_ray(orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>, lights: &Vec<Light>) -> Vec3f {
     if let Some((hit,n,material)) = scene_intersect(orig, dir, spheres) {
-        material.diffuse_color
+        let mut diffuse_light_intencity = 0.0;
+        for light in lights {
+            let light_dir = (light.pos - hit).normalize();
+            diffuse_light_intencity += light.intencity * f32::max(0.0, light_dir*n);
+        }
+        material.diffuse_color * diffuse_light_intencity
     } else {
         Vec3f::from([0.2, 0.7, 0.8])
+    }
+}
+
+pub struct Light{
+    pos: Vec3f,
+    intencity: f32
+}
+
+impl Light {
+    pub fn new(pos: Vec3f, intencity: f32) -> Self {
+        Self {pos, intencity}
     }
 }

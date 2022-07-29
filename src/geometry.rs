@@ -97,6 +97,17 @@ impl<T: Num+Copy+Neg<Output = T>, const D: usize> Neg for GVec<T,D> {
     }
 }
 
+pub type Vec3f = GVec<f32,3>;
+
+impl Vec3f {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Vec3f::from([x, y, z])
+    }
+    pub fn zero() -> Self {
+        Vec3f::from([0.0, 0.0, 0.0])
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,4 +1,4 @@
-use crate::render::Vec3f;
+use crate::geometry::Vec3f;
 
 pub struct Sphere {
     pub center: Vec3f,
