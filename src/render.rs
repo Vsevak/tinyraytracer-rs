@@ -5,7 +5,7 @@ use std::mem::swap;
 use std::path::Path;
 
 use crate::geometry::Vec3f;
-use crate::march::{sphere_trace, distance_field_normal};
+use crate::march::{ray_march};
 use crate::sphere::{Sphere, Material};
 
 pub struct Frame(Vec<Vec3f>, usize, usize);
@@ -36,11 +36,8 @@ pub fn render(spheres: Vec<Sphere>, lights: Vec<Light>) -> Frame {
             } else {
                 pixel
             };
-
-            if let Some(p) = sphere_trace(Vec3f::new(0.0,0.0,3.0), dir) {
-                let light_dir = (Vec3f::new(10.0,10.0,10.0) - p).normalize();
-                let light_intensity = f32::max(0.4, light_dir*distance_field_normal(p));
-                framebuffer[i+j*width] = Vec3f::one()*light_intensity;
+            if let Some(x) = ray_march(dir) {
+                framebuffer[i+j*width] = x;
             }
         }
     }
