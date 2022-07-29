@@ -78,9 +78,9 @@ fn scene_intersect (orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Option<(V
             hit = pt;
             n = Vec3f::from([0.0, 1.0, 0.0]);
             material.diffuse_color = if ((0.5*hit[0]+1000.0) as i32 + (0.5*hit[2]) as i32) & 1 == 1 {
-                Vec3f::new(1.0,1.0,1.0)
+                Vec3f::new(0.9, 0.9, 0.9)
             } else {
-                Vec3f::new(1.0, 0.7, 0.3)
+                Vec3f::new(0.92, 0.69, 0.078)
             }*0.3;
         }
     }
