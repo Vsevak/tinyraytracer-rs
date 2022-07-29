@@ -30,7 +30,7 @@ fn main() -> Result<(), Error> {
     let glass = Material {
         albedo: Vec4f::new(0.0,  0.5, 0.1, 0.8),
         diffuse_color: Vec3f::new(0.6, 0.7, 0.8),
-        refractive_index: 1.5,
+        refractive_index: 2.5,
         specular_exp: 125.0
     };
 

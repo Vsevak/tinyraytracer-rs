@@ -54,20 +54,38 @@ pub fn draw(frame: &Frame) -> Result<(), Error> {
 }
 
 fn scene_intersect (orig: Vec3f, dir: Vec3f, spheres: &Vec<Sphere>) -> Option<(Vec3f, Vec3f, Material)> {
-    let mut dist = f32::MAX;
+    let mut spheres_dist = f32::MAX;
     let mut hit = Vec3f::zero();
     let mut n = Vec3f::zero();
     let mut material = Material::zero();
     for i in spheres {
         if let Some(dist_i) = i.ray_intersect(orig, dir) {
-            if dist_i < dist {
-                dist = dist_i;
+            if dist_i < spheres_dist {
+                spheres_dist = dist_i;
                 hit = orig + dir*dist_i;
                 n = (hit - i.center).normalize();
                 material = i.material;
             }
         }
     }
+
+    let mut board_dist = f32::MAX;
+    if dir[1].abs() > 1e-3 {
+        let d = -(orig[1] + 4.0)/dir[1];
+        let pt = orig + dir*d;
+        if d>0.0 && pt[0].abs()<10.0 && pt[2]< -10.0 && pt[2]> -30.0 && d<spheres_dist {
+            board_dist = d;
+            hit = pt;
+            n = Vec3f::from([0.0, 1.0, 0.0]);
+            material.diffuse_color = if ((0.5*hit[0]+1000.0) as i32 + (0.5*hit[2]) as i32) & 1 == 1 {
+                Vec3f::new(1.0,1.0,1.0)
+            } else {
+                Vec3f::new(1.0, 0.7, 0.3)
+            }*0.3;
+        }
+    }
+
+    let dist = f32::min(spheres_dist, board_dist);
     if dist < 10000.0 {
         Some((hit,n,material))
     } else {
