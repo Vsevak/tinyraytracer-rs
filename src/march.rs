@@ -18,3 +18,12 @@ pub fn sphere_trace(orig: Vec3f, dir: Vec3f) -> Option<Vec3f> {
     }
     None
 }
+
+pub fn distance_field_normal(pos: Vec3f) -> Vec3f {
+    let eps = 0.1;
+    let d = signed_dist(pos);
+    let nx = signed_dist(pos + Vec3f::new(eps, 0.0, 0.0)) - d;
+    let ny = signed_dist(pos + Vec3f::new(0.0, eps, 0.0)) - d;
+    let nz = signed_dist(pos + Vec3f::new(0.0, 0.0, eps)) - d;
+    Vec3f::new(nx,ny,nz).normalize()
+}
