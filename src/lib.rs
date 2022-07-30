@@ -1,7 +1,10 @@
+use std::f32::consts::PI;
 use std::io::Error;
 
+use render::{View, Scene};
+
 use crate::geometry::{Vec3f, Vec4f};
-use crate::render::{render, draw, Light};
+use crate::render::{Light};
 use crate::sphere::{Sphere, Material};
 
 pub mod geometry;
@@ -25,7 +28,7 @@ pub fn run() -> Result<(), Error> {
     };
     let mirror = Material {
         diffuse_color: Vec3f::one(),
-        albedo: Vec4f::new(0.0, 10.0, 0.8, 0.0),
+        albedo: Vec4f::new(0.2, 10.0, 0.8, 0.0),
         specular_exp: 1425.0,
         refractive_index: 1.0
     };
@@ -37,10 +40,10 @@ pub fn run() -> Result<(), Error> {
     };
 
     let spheres = vec![
-        Sphere::new(Vec3f::new(-3.0, 0.0, -16.0), 2.0, ivory),
-        Sphere::new(Vec3f::new(-1.0, -1.5, -12.0), 2.0, glass),
-        Sphere::new(Vec3f::new(1.5, -0.5, -18.0), 3.0, red_rubber),
-        Sphere::new(Vec3f::new(7.0, 5.0, -18.0), 4.0, mirror)
+        Sphere::new(Vec3f::new(-3.0, 0.0, -16.0), 2.0, &ivory),
+        Sphere::new(Vec3f::new(-1.0, -1.5, -12.0), 2.0, &glass),
+        Sphere::new(Vec3f::new(1.5, -0.5, -18.0), 3.0, &red_rubber),
+        Sphere::new(Vec3f::new(7.0, 5.0, -18.0), 4.0, &mirror)
     ];
 
     let lights = vec![
@@ -48,5 +51,8 @@ pub fn run() -> Result<(), Error> {
         Light::new(Vec3f::new( 30.0, 50.0, -25.0), 1.8),
         Light::new(Vec3f::new( 30.0, 20.0,  30.0), 1.7),
     ];
-    draw(&render(spheres, lights))
+    let scene = Scene::new(spheres, lights);
+    let _small = View::new(1024,768,PI / 3.0);
+    let fs = View::new(2560,1920,PI / 3.0);
+    fs.render(scene).save()
 }

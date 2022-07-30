@@ -1,13 +1,13 @@
 use crate::geometry::{Vec3f, Vec4f};
 
-pub struct Sphere {
+pub struct Sphere<'a> {
     pub center: Vec3f,
     pub radius: f32,
-    pub material: Material
+    pub material: &'a Material
 }
 
-impl Sphere {
-    pub fn new(center: Vec3f, radius: f32, material: Material) -> Self {
+impl<'a> Sphere<'a> {
+    pub fn new(center: Vec3f, radius: f32, material: &'a Material) -> Self {
         Self{
             center,
             radius,
@@ -43,8 +43,8 @@ pub struct Material {
     pub specular_exp: f32
 }
 
-impl Material {
-    pub fn zero() -> Self {
+impl Default for Material {
+    fn default() -> Self {
         Self { 
             diffuse_color: Vec3f::zero(),
             albedo: Vec4f::from([1.0, 0.0, 0.0, 0.0]),

@@ -1,6 +1,6 @@
 use crate::{geometry::Vec3f, noise::{fractal_brownian_motion, lerp}};
 
-const SPHERE_RADIUS: f32 = 1.0;
+const SPHERE_RADIUS: f32 = 1.5;
 const NOISE_AMP: f32 = 1.0;
 const STEPS: usize = 128;
 
@@ -25,12 +25,13 @@ fn sphere_trace(orig: Vec3f, dir: Vec3f) -> Option<Vec3f> {
     None
 }
 
-pub fn ray_march(dir: Vec3f) -> Option<Vec3f> {
+pub fn ray_march(dir: Vec3f) -> Option<(Vec3f,f32)> {
     if let Some(p) = sphere_trace(Vec3f::new(0.0,0.0,3.0), dir) {
         let noise_lvl = (SPHERE_RADIUS-p.norm())/NOISE_AMP;
+        //println!("{}", noise_lvl);
         let light_dir = (Vec3f::new(10.0,10.0,10.0) - p).normalize();
         let light_intensity = f32::max(0.4, light_dir*distance_field_normal(p));
-        Some(palette((-0.2+noise_lvl)*2.0)*light_intensity)
+        Some((palette((-0.3+noise_lvl)*2.0)*light_intensity,(1.0-noise_lvl*0.3)))
     } else {
         None
     }
@@ -51,9 +52,10 @@ pub fn palette(d: f32) -> Vec3f {
     let red = Vec3f::new(1.0, 0.0, 0.0);
     let darkgray = Vec3f::new(0.2, 0.2, 0.2);
     let gray = Vec3f::new(0.4, 0.4, 0.4);
+
     let x = 0.0f32.max(1.0f32.min(d));
     match (x*100.0) as i32 {
-        0..=25 => lerp(gray, darkgray, x*4.0),
+        0 ..=25 => lerp(gray, darkgray, x*4.0),
         26..=50 => lerp(darkgray, red, x*4.0 - 1.0),
         51..=75 => lerp(red, orange, x*4.0 - 2.0),
         _ => lerp(orange, yellow, x*4.0 - 3.0)
