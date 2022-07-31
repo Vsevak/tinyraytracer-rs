@@ -1,19 +1,13 @@
 use std::f32::consts::PI;
-use std::io::Error;
 
-use render::{View, Scene};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use ray_rs::{self, render::{Scene, View, Light}, geometry::{Vec3f, Vec4f}, sphere::{Sphere, Material}};
 
-use crate::geometry::{Vec3f, Vec4f};
-use crate::render::{Light};
-use crate::sphere::{Sphere, Material};
+pub fn bench_wall(c: &mut Criterion) {
+    c.bench_function("id", |b| b.iter(|| ray_rs::run()));
+}
 
-pub mod geometry;
-pub mod render;
-pub mod sphere;
-pub mod march;
-pub mod noise;
-
-pub fn run() -> Result<(), Error> {
+pub fn bench_render(c: &mut Criterion) {
     let ivory = Material {
         diffuse_color: Vec3f::new(0.4, 0.4, 0.3),
         albedo: Vec4f::new(0.6, 0.3, 0.1, 0.0),
@@ -52,7 +46,9 @@ pub fn run() -> Result<(), Error> {
         Light::new(Vec3f::new( 30.0, 20.0,  30.0), 1.7),
     ];
     let scene = Scene::new(spheres, lights);
-    let _small = View::new(1024,768,PI / 3.0);
     let fs = View::new(2560,1920,PI / 3.0);
-    fs.render(&scene).save()
+    c.bench_function("render", |b| b.iter(|| fs.render(&scene)));
 }
+
+criterion_group!(benches, bench_render);
+criterion_main!(benches);

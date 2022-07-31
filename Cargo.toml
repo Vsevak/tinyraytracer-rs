@@ -7,3 +7,16 @@ edition = "2021"
 
 [dependencies]
 num-traits = "0.2.15"
+rayon = "1.5.3"
+
+[dev-dependencies]
+criterion = "0.3.6"
+
+[[bench]]
+name = "bench"
+harness = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+debug = true

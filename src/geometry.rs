@@ -18,14 +18,14 @@ impl<T, const D: usize> Index<usize> for GVec<T, D> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
-        assert!(index < D);
+        debug_assert!(index < D);
         &self.0[index]
     }
 }
 
 impl<T, const D: usize> IndexMut<usize> for GVec<T, D> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        assert!(index < D);
+        debug_assert!(index < D);
         &mut self.0[index]
     }
 }
@@ -33,7 +33,7 @@ impl<T, const D: usize> IndexMut<usize> for GVec<T, D> {
 impl<T: Float, const D: usize> GVec<T, D> {
     pub fn norm(self) -> T {
         match D {
-            1.. => (self.0.into_iter().fold(T::zero(), |acc, i| acc + i*i)).sqrt(),
+            1.. => self.0.into_iter().fold(T::zero(), |acc, i| acc + i*i).sqrt(),
             _ => T::zero()
         } 
     }
@@ -66,8 +66,8 @@ impl<T:Num+Copy, const D: usize> Add for GVec<T, D> {
 
     fn add(self, rhs: Self) -> Self::Output {
         let mut arr = self.0;
-        for i in 0..D {
-            arr[i] = arr[i] + rhs.0[i];
+        for (i, a) in arr.iter_mut().zip(rhs.0.into_iter()) {
+            *i = *i + a;
         }
         Self(
             arr
@@ -80,8 +80,8 @@ impl<T:Num+Copy, const D: usize> Sub for GVec<T, D> {
 
     fn sub(self, rhs: Self) -> Self::Output {
         let mut arr = self.0;
-        for i in 0..D {
-            arr[i] = arr[i] - rhs.0[i];
+        for (i, a) in arr.iter_mut().zip(rhs.0.into_iter()) {
+            *i = *i - a;
         }
         Self(
             arr
