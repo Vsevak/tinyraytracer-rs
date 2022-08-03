@@ -52,8 +52,8 @@ pub fn run() -> Result<(), Error> {
         Light::new(Vec3f::new( 30.0, 20.0,  30.0), 1.7),
     ];
     let scene = Scene::new(spheres, lights);
-    let _small = View::new(1024,768,PI / 3.0);
+    let small = View::new(1024,768,PI / 3.0);
     let fs = View::new(2560,1920,PI / 3.0);
-    fs.render(RenderType::RayTrace(&scene)).save("./out.ppm")?;
-    _small.render(RenderType::Kaboom).save("./kaboom.ppm")
+    fs.render(RenderType::RayTrace(&scene)).save("./scene.ppm")?;
+    small.render(RenderType::Kaboom).save("./kaboom.ppm")
 }
