@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use ray_rs::{self, render::{Scene, View, Light}, geometry::{Vec3f, Vec4f}, sphere::{Sphere, Material}};
+use ray_rs::{self, render::{Scene, View, Light, RenderType}, geometry::{Vec3f, Vec4f}, sphere::{Sphere, Material}};
 
 pub fn bench_wall(c: &mut Criterion) {
     c.bench_function("id", |b| b.iter(|| ray_rs::run()));
@@ -47,7 +47,9 @@ pub fn bench_render(c: &mut Criterion) {
     ];
     let scene = Scene::new(spheres, lights);
     let fs = View::new(2560,1920,PI / 3.0);
-    c.bench_function("render", |b| b.iter(|| fs.render(&scene)));
+    c.bench_function("render", |b| b.iter( || {
+        fs.render(RenderType::RayTrace(&scene));
+    }));
 }
 
 criterion_group!(benches, bench_render);

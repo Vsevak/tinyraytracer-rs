@@ -25,15 +25,14 @@ fn sphere_trace(orig: Vec3f, dir: Vec3f) -> Option<Vec3f> {
     None
 }
 
-pub fn ray_march(dir: Vec3f) -> Option<(Vec3f,f32)> {
+pub fn ray_march(dir: Vec3f) -> Vec3f {
     if let Some(p) = sphere_trace(Vec3f::new(0.0,0.0,3.0), dir) {
         let noise_lvl = (SPHERE_RADIUS-p.norm())/NOISE_AMP;
-        //println!("{}", noise_lvl);
         let light_dir = (Vec3f::new(10.0,10.0,10.0) - p).normalize();
         let light_intensity = f32::max(0.4, light_dir*distance_field_normal(p));
-        Some((palette((-0.3+noise_lvl)*2.0)*light_intensity,(1.0-noise_lvl*0.3)))
+        palette((-0.3+noise_lvl)*2.0)*light_intensity
     } else {
-        None
+        Vec3f::new(0.2, 0.7, 0.8)
     }
 }
 

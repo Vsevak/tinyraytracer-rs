@@ -21,44 +21,41 @@ pub struct View {
     fov: f32
 }
 
+pub enum RenderType<'a> {
+    Kaboom,
+    RayTrace(&'a Scene<'a>)
+}
+
 impl View {
     pub fn new(width:usize, height: usize, fov: f32) -> Self {
         Self { width, height, fov }
     }
 
-    pub fn render(&self, scene: &Scene) -> Frame {
+    pub fn render(&self, scene: RenderType) -> Frame {
         let fheight = self.height as f32;
         let fwidth = self.width as f32;
         let mut framebuffer: Vec<Vec3f> = Vec::with_capacity(self.width*self.height);
         framebuffer.resize(self.width*self.height, Vec3f::zero());
         let orig = Vec3f::zero();
         let z = -fheight/(2.0*f32::tan(self.fov/2.0));
-        
         framebuffer.par_chunks_mut(self.width).enumerate()
         .for_each(|(j, row)| {
             let fj = j as f32;
             let y = -(fj + 0.5) + fheight / 2.0;
-            for i in 0..self.width {
+            for (i,p) in row.iter_mut().enumerate() {
                 let fi = i as f32;
                 let x =  (fi + 0.5) - fwidth / 2.0;
                 let dir = Vec3f::new(x, y, z).normalize();
-                let pixel = scene.cast_ray(orig, dir,  4);
-
-                // framebuffer[i+j*width] = if let Some((x, a)) = ray_march(dir) {
-                //     //Vec3f::new(0.2, 0.7, 0.8)
-                //     //framebuffer[i+j*width] = framebuffer[i+j*width]*(1.0-a) + x*a;
-                //     x
-                // } else {
-                //     Vec3f::new(0.2, 0.7, 0.8)
-                // }
-
+                let pixel = match scene {
+                    RenderType::Kaboom => ray_march(dir),
+                    RenderType::RayTrace(s) => s.cast_ray(orig, dir,  4)
+                };
                 let max = pixel[0].max(pixel[1].max(pixel[2]));
-                row[i] =  if max > 1.0 {
+                *p =  if max > 1.0 {
                     pixel * (1.0/max)
                 } else {
                     pixel
                 };
-
             }
         });
         Frame { framebuffer, width: self.width, height: self.height }
@@ -66,8 +63,8 @@ impl View {
 }
 
 impl Frame {
-    pub fn save(&self) -> Result<(), Error> {
-        let path = Path::new("./out.ppm");
+    pub fn save(&self, p: &str) -> Result<(), Error> {
+        let path = Path::new(p);
         let mut file = File::create(&path)?;
         write!(file, "P6\n{} {}\n255\n", self.width, self.height)?;
         let mut file_buff = BufWriter::new(file);
@@ -197,15 +194,12 @@ fn refract(i: Vec3f, n: Vec3f, rf_index: f32) -> Vec3f {
     }
 }
 
-
-
-// Сдвиг точки в направлении нормали
 #[inline]
 fn normal_offset(v: Vec3f, n: Vec3f, dir: Vec3f) -> Vec3f {
     v + n*1e-3*(dir*n).signum()
 }
 
-pub struct Light{
+pub struct Light {
     pos: Vec3f,
     intensity: f32
 }

@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 use std::io::Error;
 
-use render::{View, Scene};
+use render::{View, Scene, RenderType};
 
 use crate::geometry::{Vec3f, Vec4f};
 use crate::render::{Light};
@@ -54,5 +54,6 @@ pub fn run() -> Result<(), Error> {
     let scene = Scene::new(spheres, lights);
     let _small = View::new(1024,768,PI / 3.0);
     let fs = View::new(2560,1920,PI / 3.0);
-    fs.render(&scene).save()
+    fs.render(RenderType::RayTrace(&scene)).save("./out.ppm")?;
+    _small.render(RenderType::Kaboom).save("./kaboom.ppm")
 }
