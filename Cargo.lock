@@ -340,6 +340,8 @@ dependencies = [
  "criterion",
  "num-traits",
  "rayon",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
