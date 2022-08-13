@@ -4,8 +4,6 @@ use std::io::{prelude::*, Error, BufWriter};
 use std::mem::swap;
 use std::path::Path;
 
-use rayon::prelude::*;
-
 use crate::geometry::Vec3f;
 use crate::march::{ray_march};
 use crate::sphere::{Sphere, Material};
@@ -47,7 +45,7 @@ impl View {
         framebuffer.resize(self.width*self.height, Vec3f::zero());
         let orig = Vec3f::zero();
         let z = -fheight/(2.0*f32::tan(self.fov/2.0));
-        framebuffer.par_chunks_mut(self.width).enumerate()
+        framebuffer.chunks_mut(self.width).enumerate()
         .for_each(|(j, row)| {
             let fj = j as f32;
             let y = -(fj + 0.5) + fheight / 2.0;

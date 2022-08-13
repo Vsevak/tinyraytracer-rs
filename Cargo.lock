@@ -339,7 +339,6 @@ version = "0.1.0"
 dependencies = [
  "criterion",
  "num-traits",
- "rayon",
  "wasm-bindgen",
  "web-sys",
 ]
