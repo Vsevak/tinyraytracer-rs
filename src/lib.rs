@@ -1,6 +1,9 @@
 use std::f32::consts::PI;
 use std::io::Error;
 
+use wasm_bindgen::{prelude::*, Clamped};
+use web_sys::{CanvasRenderingContext2d, ImageData};
+
 use render::{View, Scene, RenderType};
 
 use crate::geometry::{Vec3f, Vec4f};
@@ -13,7 +16,12 @@ pub mod sphere;
 pub mod march;
 pub mod noise;
 
-pub fn run() -> Result<(), Error> {
+#[wasm_bindgen]
+pub fn draw(
+    ctx: &CanvasRenderingContext2d,
+    width: u32,
+    height: u32
+) -> Result<(), JsValue> {
     let ivory = Material {
         diffuse_color: Vec3f::new(0.4, 0.4, 0.3),
         albedo: Vec4f::new(0.6, 0.3, 0.1, 0.0),
@@ -52,8 +60,17 @@ pub fn run() -> Result<(), Error> {
         Light::new(Vec3f::new( 30.0, 20.0,  30.0), 1.7),
     ];
     let scene = Scene::new(spheres, lights);
-    let small = View::new(1024,768,PI / 3.0);
-    let fs = View::new(2560,1920,PI / 3.0);
-    fs.render(RenderType::RayTrace(&scene)).save("./scene.ppm")?;
-    small.render(RenderType::Kaboom).save("./kaboom.ppm")
+    let small = View::new(width as usize, height as usize,PI / 3.0);
+
+    let window = web_sys::window().expect("no global `window` exists");
+    let document = window.document().expect("should have a document on window");
+    let body = document.body().expect("document should have a body");
+
+    let data = small.render(RenderType::RayTrace(&scene));
+
+    let img = ImageData::new_with_u8_clamped_array(
+        Clamped(&mut data.as_u8()), width)?;
+    ctx.put_image_data(&img, 0.0, 0.0);
+
+    Ok(())
 }

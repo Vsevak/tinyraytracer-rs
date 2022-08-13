@@ -14,6 +14,12 @@ impl<T, const D: usize> From<[T; D]> for GVec<T, D>{
     }
 }
 
+impl<T, const D: usize> Into<[T; D]> for GVec<T, D>{
+    fn into(self) -> [T; D] {
+        self.0
+    }
+}
+
 impl<T, const D: usize> Index<usize> for GVec<T, D> {
     type Output = T;
 

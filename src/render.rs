@@ -1,3 +1,4 @@
+use std::array;
 use std::fs::{File};
 use std::io::{prelude::*, Error, BufWriter};
 use std::mem::swap;
@@ -13,6 +14,14 @@ pub struct Frame {
     framebuffer:Vec<Vec3f>, 
     width: usize,
     height:usize
+}
+
+impl Frame {
+    pub fn as_u8(&self) -> Vec<u8> {
+        self.framebuffer.iter()
+        .flat_map(|&g| [g[0] as u8, g[1] as u8, g[2] as u8, 0])
+        .collect()
+    }
 }
 
 pub struct View {
