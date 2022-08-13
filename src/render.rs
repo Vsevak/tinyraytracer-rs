@@ -1,4 +1,5 @@
 use std::array;
+use std::cmp::{min, max};
 use std::fs::{File};
 use std::io::{prelude::*, Error, BufWriter};
 use std::mem::swap;
@@ -17,7 +18,8 @@ pub struct Frame {
 impl Frame {
     pub fn as_u8(&self) -> Vec<u8> {
         self.framebuffer.iter()
-        .flat_map(|&g| [g[0] as u8, g[1] as u8, g[2] as u8, 0])
+        .flat_map(|&g| [g[0], g[1], g[2] , 1.0])
+        .map(|x | (255.0f32 * 0.0f32.max(1.0f32.min(x))) as u8)
         .collect()
     }
 }

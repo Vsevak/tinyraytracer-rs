@@ -68,9 +68,7 @@ pub fn draw(
 
     let data = small.render(RenderType::RayTrace(&scene));
 
-    let img = ImageData::new_with_u8_clamped_array(
-        Clamped(&mut data.as_u8()), width)?;
-    ctx.put_image_data(&img, 0.0, 0.0);
-
-    Ok(())
+    let img = ImageData::new_with_u8_clamped_array_and_sh(
+        Clamped(&mut data.as_u8()), width, height)?;
+    ctx.put_image_data(&img, 0.0, 0.0)
 }
