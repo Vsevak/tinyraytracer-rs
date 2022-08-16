@@ -1,4 +1,4 @@
-# Raytracer in Rust
+# Raytracer in Rust ( + WebAssembly)
 
 Based on [tinyraytracer](https://github.com/ssloy/tinyraytracer) + [tinykaboom](https://github.com/ssloy/tinykaboom) articles by [Dmitry V. Sokolov](https://github.com/ssloy).
 
