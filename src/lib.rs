@@ -24,7 +24,7 @@ pub fn draw(
     ctx: CanvasRenderingContext2d,
     width: u32,
     height: u32,
-    tick: i32
+    x: f32, y: f32
 ) -> Result<(), JsValue> {
     let ivory = Material {
         diffuse_color: Vec3f::new(0.4, 0.4, 0.3),
@@ -65,24 +65,7 @@ pub fn draw(
     ];
     let scene = Scene::new(spheres, lights);
     let small = View::new(width as usize, height as usize,PI / 3.0);
-
-    // let window = web_sys::window().expect("no global `window` exists");
-    // let document = window.document().expect("should have a document on window");
-    // let body = document.body().expect("document should have a body");
-    
-    // let canvas = document
-    // .create_element("canvas")?
-    // .dyn_into::<web_sys::HtmlCanvasElement>()?;
-    // body.append_child(&canvas)?;
-    // canvas.set_width(width);
-    // canvas.set_height(height);
-    
-    // let ctx = canvas
-    // .get_context("2d")?
-    // .unwrap()
-    // .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
-
-    let data = small.render(RenderType::RayTrace(&scene), tick);
+    let data = small.render(RenderType::RayTrace(&scene), x, y);
 
     let img = ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(&mut data.as_u8()), width, height).unwrap();

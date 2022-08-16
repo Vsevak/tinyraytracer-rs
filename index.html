@@ -46,21 +46,19 @@
         const canvas = document.getElementById('drawing');
         const ctx = canvas.getContext('2d');
 
-        function draw_frame (i) {
-
-          draw(ctx, 400, 300, i)
-          if (i > 31416) {
-            window.requestAnimationFrame(draw_frame, 0)
-          } else {
-            window.requestAnimationFrame(draw_frame, i+1)
-          }
+        function draw_frame (event) {
+          var x = 500
+          var y = 400
+          draw(ctx, x, y, (-event.offsetX + x*0.5)/(x*0.5), (event.offsetY - y*0.3)/(y*0.5))
         }
-        draw_frame(0)
+        draw(ctx, 400, 300, 0, 0)
+
+        canvas.addEventListener("mousemove", draw_frame)
       }
 
       run();
     </script>
-    <canvas id="drawing" width="800" height="600"></canvas>
+    <canvas id="drawing" width="640" height="480"></canvas>
   </body>
 </html>
 

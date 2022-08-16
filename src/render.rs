@@ -40,13 +40,12 @@ impl View {
         Self { width, height, fov }
     }
 
-    pub fn render(&self, scene: RenderType, tick: i32) -> Frame {
+    pub fn render(&self, scene: RenderType, x: f32, y:f32) -> Frame {
         let fheight = self.height as f32;
         let fwidth = self.width as f32;
         let mut framebuffer: Vec<Vec3f> = Vec::with_capacity(self.width*self.height);
         framebuffer.resize(self.width*self.height, Vec3f::zero());
-        let t = ((tick as f32)*0.001).sin_cos();
-        let orig = Vec3f::new(t.0, t.1, 0.0);
+        let orig = Vec3f::new(x, y, 0.0)*5.0;
         let z = -fheight/(2.0*f32::tan(self.fov/2.0));
         framebuffer.chunks_mut(self.width).enumerate()
         .for_each(|(j, row)| {
@@ -146,7 +145,7 @@ impl<'a> Scene<'a> {
         }
         let (hit, n, material) = match self.scene_intersect(orig, dir) {
             Some((x,y,z)) => (x,y,z),
-            None => return background // *((250.0*dir[0]*dir[1]).sin())
+            None => return background
         };
     
         let reflect_dir = reflect(dir, n).normalize();
