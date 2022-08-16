@@ -48,10 +48,10 @@
 
         function draw_frame (event) {
           var x = 500
-          var y = 400
+          var y = 500
           draw(ctx, x, y, (-event.offsetX + x*0.5)/(x*0.5), (event.offsetY - y*0.3)/(y*0.5))
         }
-        draw(ctx, 400, 300, 0, 0)
+        draw(ctx, 500, 500, 0, 0)
 
         canvas.addEventListener("mousemove", draw_frame)
       }
