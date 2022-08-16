@@ -23,6 +23,8 @@ features = [
   'Window',
   'ImageData',
   'CanvasRenderingContext2d',
+  'HtmlCanvasElement',
+  'HtmlStyleElement'
 ]
 
 [[bench]]

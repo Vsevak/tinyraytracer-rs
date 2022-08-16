@@ -40,12 +40,13 @@ impl View {
         Self { width, height, fov }
     }
 
-    pub fn render(&self, scene: RenderType) -> Frame {
+    pub fn render(&self, scene: RenderType, tick: i32) -> Frame {
         let fheight = self.height as f32;
         let fwidth = self.width as f32;
         let mut framebuffer: Vec<Vec3f> = Vec::with_capacity(self.width*self.height);
         framebuffer.resize(self.width*self.height, Vec3f::zero());
-        let orig = Vec3f::zero();
+        let t = ((tick as f32)*0.001).sin_cos();
+        let orig = Vec3f::new(t.0, t.1, 0.0);
         let z = -fheight/(2.0*f32::tan(self.fov/2.0));
         framebuffer.chunks_mut(self.width).enumerate()
         .for_each(|(j, row)| {
@@ -139,12 +140,13 @@ impl<'a> Scene<'a> {
     }
 
     fn cast_ray(&self, orig: Vec3f, dir: Vec3f, depth: usize) -> Vec3f {
+        let background = Vec3f::new(0.2, 0.7, 0.8);
         if depth == 0 {
-            return Vec3f::new(0.2, 0.7, 0.8)
+            return background
         }
         let (hit, n, material) = match self.scene_intersect(orig, dir) {
             Some((x,y,z)) => (x,y,z),
-            None => return Vec3f::new(0.2, 0.7, 0.8)
+            None => return background // *((250.0*dir[0]*dir[1]).sin())
         };
     
         let reflect_dir = reflect(dir, n).normalize();

@@ -1,7 +1,10 @@
+use std::borrow::Borrow;
 use std::f32::consts::PI;
 use std::io::Error;
+use std::rc::Rc;
+use std::cell::RefCell;
 
-use wasm_bindgen::{prelude::*, Clamped};
+use wasm_bindgen::{prelude::*, Clamped, JsCast};
 use web_sys::{CanvasRenderingContext2d, ImageData};
 
 use render::{View, Scene, RenderType};
@@ -18,9 +21,10 @@ pub mod noise;
 
 #[wasm_bindgen]
 pub fn draw(
-    ctx: &CanvasRenderingContext2d,
+    ctx: CanvasRenderingContext2d,
     width: u32,
-    height: u32
+    height: u32,
+    tick: i32
 ) -> Result<(), JsValue> {
     let ivory = Material {
         diffuse_color: Vec3f::new(0.4, 0.4, 0.3),
@@ -62,13 +66,25 @@ pub fn draw(
     let scene = Scene::new(spheres, lights);
     let small = View::new(width as usize, height as usize,PI / 3.0);
 
-    let window = web_sys::window().expect("no global `window` exists");
-    let document = window.document().expect("should have a document on window");
-    let body = document.body().expect("document should have a body");
+    // let window = web_sys::window().expect("no global `window` exists");
+    // let document = window.document().expect("should have a document on window");
+    // let body = document.body().expect("document should have a body");
+    
+    // let canvas = document
+    // .create_element("canvas")?
+    // .dyn_into::<web_sys::HtmlCanvasElement>()?;
+    // body.append_child(&canvas)?;
+    // canvas.set_width(width);
+    // canvas.set_height(height);
+    
+    // let ctx = canvas
+    // .get_context("2d")?
+    // .unwrap()
+    // .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
 
-    let data = small.render(RenderType::RayTrace(&scene));
+    let data = small.render(RenderType::RayTrace(&scene), tick);
 
     let img = ImageData::new_with_u8_clamped_array_and_sh(
-        Clamped(&mut data.as_u8()), width, height)?;
+            Clamped(&mut data.as_u8()), width, height).unwrap();
     ctx.put_image_data(&img, 0.0, 0.0)
 }

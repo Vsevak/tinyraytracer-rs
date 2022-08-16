@@ -45,12 +45,22 @@
 
         const canvas = document.getElementById('drawing');
         const ctx = canvas.getContext('2d');
-        draw(ctx, 600, 600);
+
+        function draw_frame (i) {
+
+          draw(ctx, 400, 300, i)
+          if (i > 31416) {
+            window.requestAnimationFrame(draw_frame, 0)
+          } else {
+            window.requestAnimationFrame(draw_frame, i+1)
+          }
+        }
+        draw_frame(0)
       }
 
       run();
     </script>
-    <canvas id="drawing" width="600" height="600"></canvas>
+    <canvas id="drawing" width="800" height="600"></canvas>
   </body>
 </html>
 
